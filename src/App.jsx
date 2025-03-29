@@ -1,35 +1,27 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import About from './components/About'
 import Services from './components/Services'
-import Gallery from './components/Gallery'
+import WhyChooseUs from './components/WhyChooseUs'
+import PetGallery from './components/PetGallery'
+import FunFacts from './components/FunFacts'
 import Testimonials from './components/Testimonials'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import './App.css'
 
 function App() {
-  useEffect(() => {
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault()
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-          behavior: 'smooth'
-        })
-      })
-    })
-  }, [])
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-cream">
-      <Navbar />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <main>
         <Hero />
-        <About />
         <Services />
-        <Gallery />
+        <WhyChooseUs />
+        <PetGallery />
+        <FunFacts />
         <Testimonials />
         <Contact />
       </main>

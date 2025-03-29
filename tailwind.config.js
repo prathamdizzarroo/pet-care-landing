@@ -15,7 +15,8 @@ export default {
         accent: 'var(--color-accent)',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Poppins', 'sans-serif'],
+        display: ['Playfair Display', 'serif'],
       },
       animation: {
         'bounce-slow': 'bounce 3s infinite',
@@ -23,22 +24,12 @@ export default {
       },
       keyframes: {
         bounce: {
-          '0%, 100%': {
-            transform: 'translateY(0)',
-            animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)',
-          },
-          '50%': {
-            transform: 'translateY(-10px)',
-            animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
-          },
+          '0%, 100%': { transform: 'translateY(-25%)', animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)' },
+          '50%': { transform: 'translateY(0)', animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)' },
         },
         float: {
-          '0%, 100%': {
-            transform: 'translateY(0px)',
-          },
-          '50%': {
-            transform: 'translateY(-20px)',
-          },
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
         },
       },
     },
