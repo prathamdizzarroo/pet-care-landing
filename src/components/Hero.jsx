@@ -18,11 +18,21 @@ const images = [
   }
 ];
 
+// Particle configurations
+const particles = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  size: Math.random() * 10 + 5,
+  initialX: Math.random() * 100,
+  initialY: Math.random() * 100,
+  duration: Math.random() * 20 + 10,
+  delay: Math.random() * 5,
+}));
+
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1
@@ -31,20 +41,28 @@ const Hero = () => {
   const particlesRef = useRef([]);
   const controls = useAnimation()
 
-  // Enhanced scroll effect
+  // Enhanced scroll effect with smoother transitions
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
         controls.start({ 
           opacity: 0.7,
           scale: 0.98,
-          y: -10
+          y: -10,
+          transition: {
+            duration: 0.8,
+            ease: [0.4, 0, 0.2, 1]
+          }
         })
       } else {
         controls.start({ 
           opacity: 1,
           scale: 1,
-          y: 0
+          y: 0,
+          transition: {
+            duration: 0.8,
+            ease: [0.4, 0, 0.2, 1]
+          }
         })
       }
     }
@@ -53,21 +71,23 @@ const Hero = () => {
   }, [controls])
 
   const handleMouseMove = useCallback((e) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
     setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: (clientX / innerWidth) * 100,
+      y: (clientY / innerHeight) * 100,
     });
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      if (!isHovered) {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      }
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isHovered]);
 
   useLayoutEffect(() => {
     if (containerRef.current) {
@@ -86,15 +106,15 @@ const Hero = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   }, []);
 
-  // Enhanced animation variants
+  // Enhanced animation variants with smoother transitions
   const floatingAnimation = {
     initial: { y: 0 },
     animate: {
       y: [0, -10, 0],
       transition: {
-        duration: 3,
+        duration: 4,
         repeat: Infinity,
-        ease: "easeInOut"
+        ease: [0.4, 0, 0.2, 1]
       }
     }
   }
@@ -120,10 +140,100 @@ const Hero = () => {
       style={{
         perspective: "1000px",
         transformStyle: "preserve-3d",
-        transform: `rotateX(${mousePosition.y * 0.05}deg) rotateY(${mousePosition.x * 0.05}deg)`
+        transform: `rotateX(${mousePosition.y * 0.03}deg) rotateY(${mousePosition.x * 0.03}deg)`,
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       }}
     >
-      {/* Interactive Background Elements */}
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+        {/* Gradient Orbs */}
+        <motion.div
+          className="absolute top-0 left-0 w-[800px] h-[800px] rounded-full bg-primary/10 blur-3xl"
+          animate={{
+            x: [0, 100, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{
+            transform: `translate(${mousePosition.x/10 - 50}px, ${mousePosition.y/10 - 50}px)`,
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-secondary/10 blur-3xl"
+          animate={{
+            x: [0, -70, 0],
+            y: [0, 100, 0],
+            scale: [1.2, 1, 1.2],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{
+            transform: `translate(${-mousePosition.x/8}px, ${-mousePosition.y/8}px)`,
+          }}
+        />
+
+        {/* Floating Particles */}
+        {particles.map((particle) => (
+          <motion.div
+            key={particle.id}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: particle.size,
+              height: particle.size,
+              left: `${particle.initialX}%`,
+              top: `${particle.initialY}%`,
+              opacity: 0.3,
+            }}
+            animate={{
+              y: [0, -100, 0],
+              x: [0, Math.sin(particle.id) * 50, 0],
+              opacity: [0, 0.3, 0],
+              scale: [0, 1, 0],
+            }}
+            transition={{
+              duration: particle.duration,
+              repeat: Infinity,
+              delay: particle.delay,
+              ease: "linear",
+            }}
+          />
+        ))}
+
+        {/* Animated Paw Prints */}
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute text-4xl opacity-10"
+            initial={{ 
+              x: -50,
+              y: Math.random() * window.innerHeight,
+              rotate: Math.random() * 360 
+            }}
+            animate={{
+              x: window.innerWidth + 50,
+              rotate: Math.random() * 360
+            }}
+            transition={{
+              duration: 15 + Math.random() * 10,
+              repeat: Infinity,
+              delay: i * 5,
+              ease: "linear"
+            }}
+          >
+            🐾
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Interactive Background Elements with smoother transitions */}
       <motion.div
         animate={{
           background: isHovered 
@@ -135,13 +245,14 @@ const Hero = () => {
               )`
             : "none",
         }}
-        className="absolute inset-0 transition-all duration-500"
+        className="absolute inset-0 transition-all duration-700"
         style={{
           transform: `translate(${mousePosition.x * 20}px, ${mousePosition.y * 20}px)`,
+          transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
         }}
       />
 
-      {/* Enhanced Animated Particles */}
+      {/* Enhanced Animated Particles with smoother motion */}
       {[...Array(30)].map((_, i) => (
         <motion.div
           key={i}
@@ -153,10 +264,10 @@ const Hero = () => {
             y: [-Math.random() * 300, -Math.random() * 600]
           }}
           transition={{
-            duration: 4 + Math.random() * 2,
+            duration: 5 + Math.random() * 2,
             repeat: Infinity,
             delay: i * 0.1,
-            ease: "easeOut"
+            ease: [0.4, 0, 0.2, 1]
           }}
           className={`absolute bottom-0 left-1/2 w-1 h-1 rounded-full
             ${i % 3 === 0 ? 'bg-primary/30' : i % 3 === 1 ? 'bg-secondary/30' : 'bg-accent/30'}`}
@@ -166,55 +277,32 @@ const Hero = () => {
         />
       ))}
 
-      {/* Animated Paw Prints with Trail Effect */}
-      {[...Array(5)].map((_, i) => (
-        <FramerAnimatePresence key={i}>
-          <motion.div
-            initial={{ opacity: 0, y: 100, x: -50 }}
-            animate={{ 
-              opacity: [0, 1, 0],
-              y: [-50, -200],
-              x: [-20 + (i * 15), 20 + (i * 15)]
-            }}
-            transition={{ 
-              duration: 4,
-              delay: i * 0.8,
-              repeat: Infinity,
-              repeatDelay: 1,
-              ease: "easeInOut"
-            }}
-            className="absolute bottom-0 left-1/4"
-          >
-            <span className="text-4xl opacity-20 transform rotate-[${i * 15}deg]">🐾</span>
-          </motion.div>
-        </FramerAnimatePresence>
-      ))}
-
-      {/* Enhanced Background Circles */}
+      {/* Enhanced Background Circles with smoother rotation */}
       <motion.div
         animate={{ 
           scale: [1, 1.2, 1],
           rotate: [0, 180, 0]
         }}
         transition={{ 
-          duration: 20, 
+          duration: 25, 
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: [0.4, 0, 0.2, 1]
         }}
         className="absolute -top-20 -left-20 w-96 h-96 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-3xl"
         style={{
           transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)`,
+          transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
         }}
       />
 
-      {/* Content Container */}
+      {/* Content Container with smoother entrance animations */}
       <div className="container mx-auto px-4 py-20 relative">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Enhanced Text Content */}
+          {/* Enhanced Text Content with smoother transitions */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+            transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
             className="text-center lg:text-left"
           >
             <motion.div
@@ -223,67 +311,111 @@ const Hero = () => {
               transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
               className="mb-6 relative"
             >
-              {/* Enhanced Welcome Badge with Sparkles */}
-              <motion.span
-                variants={floatingAnimation}
-                initial="initial"
-                animate="animate"
-                whileHover={{ 
-                  scale: 1.05, 
-                  y: -2,
-                  boxShadow: "0 10px 30px -10px rgba(var(--color-primary), 0.3)"
-                }}
-                className="inline-block px-6 py-2 rounded-full bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 
-                  text-primary font-medium text-sm mb-4 border border-primary/50 shadow-lg shadow-primary/5 backdrop-blur-sm
-                  relative overflow-hidden group"
+              {/* Enhanced Welcome Badge with Modern Design */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
+                className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10"
               >
-                <motion.span
-                  animate={{
-                    opacity: [0, 1, 0],
-                    scale: [0.5, 1.2, 0.5],
-                    rotate: [0, 360, 0]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    times: [0, 0.5, 1]
-                  }}
-                  className="absolute -top-1 -right-1 text-lg"
+                <motion.div
+                  className="relative px-6 py-3 rounded-full bg-white/90 backdrop-blur-sm shadow-xl
+                    border border-white/20 overflow-hidden group"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  ✨
-                </motion.span>
-                <span className="mr-2">👋</span>
-                Welcome to The Furry Town
-                <motion.span 
-                  animate={{ rotate: [-10, 10, -10] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="ml-2 inline-block"
-                >
-                  🐾
-                </motion.span>
-              </motion.span>
+                  {/* Animated Background Gradient */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10"
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  />
+                  
+                  {/* Sparkle Effect */}
+                  <motion.div
+                    className="absolute -top-1 -right-1 w-4 h-4"
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 360],
+                      opacity: [0.5, 1, 0.5]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    ✨
+                  </motion.div>
 
-              {/* Enhanced Heading with 3D Effect */}
+                  {/* Content */}
+                  <div className="relative flex items-center gap-2">
+                    <motion.span
+                      animate={{ rotate: [-10, 10, -10] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="text-xl"
+                    >
+                      👋
+                    </motion.span>
+                    <span className="font-medium text-primary">
+                      Welcome to The Furry Town
+                    </span>
+                    <motion.span
+                      animate={{ rotate: [10, -10, 10] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="text-xl"
+                    >
+                      🐾
+                    </motion.span>
+                  </div>
+
+                  {/* Hover Effect Line */}
+                  <motion.div
+                    className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary/50 to-secondary/50"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </motion.div>
+              </motion.div>
+
+              {/* Enhanced Heading with Modern Typography */}
               <motion.h1 
-                className="font-display text-4xl md:text-5xl lg:text-6xl text-primary mb-6 leading-tight
-                  perspective-1000 transform-gpu"
+                className="font-display text-5xl md:text-6xl lg:text-7xl text-primary mb-6 leading-tight
+                  perspective-1000 transform-gpu text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
                 whileHover={{
                   scale: 1.02,
                   rotateX: 10,
                   transition: { duration: 0.3 }
                 }}
               >
-                Where Every Pet Feels
+                <span className="relative inline-block">
+                  Where Every Pet
+                  <motion.div
+                    className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-primary/20 to-secondary/20"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </span>
                 <motion.span
+                  className="relative block mt-2"
                   initial={{ opacity: 0, y: 20, rotateX: -90 }}
                   animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-                  className="relative block"
+                  transition={{ delay: 0.7, duration: 1, ease: "easeOut" }}
                 >
                   <span className="relative z-10 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent 
                     bg-[length:200%_auto] animate-gradient"> 
-                    Special
+                    Feels Special
                   </span>
                   <motion.svg
                     viewBox="0 0 100 20"
@@ -291,7 +423,7 @@ const Hero = () => {
                     preserveAspectRatio="none"
                     initial={{ pathLength: 0, opacity: 0 }}
                     animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 2.5, delay: 0.7, ease: "easeOut" }}
+                    transition={{ duration: 2.5, delay: 0.9, ease: "easeOut" }}
                   >
                     <motion.path
                       d="M0 10 Q25 0, 50 10 T100 10"
